@@ -16,7 +16,7 @@ export default function BaseModal(props: PropsWithChildren<BaseModalProps>) {
 
   return createPortal(
     <motion.div
-      className='absolute w-full bg-black bg-opacity-30 h-screen top-0 left-0 flex justify-center px-8'
+      className='absolute w-full bg-black bg-opacity-30 h-screen top-0 left-0 flex justify-center px-8 select-none'
       initial='hidden'
       animate='visible'
       exit='exit'
