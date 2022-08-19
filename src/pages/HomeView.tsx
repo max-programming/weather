@@ -5,19 +5,24 @@ import { Feature, MapboxResult } from '../types';
 
 function HomeView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchError, setSearchError] = useState<boolean>(false);
   const [mapboxResults, setMapboxResults] = useState<Array<Feature>>([]);
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     async function getSearchResults() {
       if (debouncedSearch.trim() === '') return setMapboxResults([]);
-      const result = await axios.get<MapboxResult>(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${debouncedSearch}.json?access_token=${
-          import.meta.env.VITE_MAPBOX_API_KEY
-        }&types=place`
-      );
-      setMapboxResults(result.data.features);
-      console.log(mapboxResults);
+      try {
+        const result = await axios.get<MapboxResult>(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${debouncedSearch}.json?access_token=${
+            import.meta.env.VITE_MAPBOX_API_KEY
+          }&types=place`
+        );
+        setMapboxResults(result.data.features);
+        console.log(result.data.features);
+      } catch {
+        setSearchError(true);
+      }
     }
     getSearchResults();
   }, [debouncedSearch]);
@@ -32,15 +37,18 @@ function HomeView() {
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
         />
-        {mapboxResults.length > 0 && (
-          <ul className='absolute bg-weather-secondary text-white w-full shadow-md py-2 px-1 top-[66]'>
-            {mapboxResults.map(result => (
+        <ul className='absolute bg-weather-secondary text-white w-full shadow-md py-2 px-1 top-[66]'>
+          {searchError && <p>Sorry, something went wrong, please try again.</p>}
+          {mapboxResults.length === 0 ? (
+            <p>No results match your query, try a different term.</p>
+          ) : (
+            mapboxResults.map(result => (
               <li className='py-2 cursor-pointer' key={result.id}>
                 {result.place_name}
               </li>
-            ))}
-          </ul>
-        )}
+            ))
+          )}
+        </ul>
       </div>
     </main>
   );
